@@ -1,4 +1,5 @@
 defmodule Protobuf.Parser do
+  @option_regex ~r/(\s*option\s|)\(\.google[\._a-z]*\)[\._a-z]* = [\._a-z]*([;,]|)/mi
 
   defmodule ParserError do
     defexception [:message]
@@ -6,10 +7,14 @@ defmodule Protobuf.Parser do
 
   def parse_files!(files, options \\ []) do
     Enum.reduce(files, [], fn(path, defs) ->
-      schema = File.read!(path)
+      schema = path |> File.read!() |> replace_options()
       new_defs = parse!(schema, options)
       defs ++ new_defs
     end) |> finalize!(options)
+  end
+
+  defp replace_options(content) do
+    Regex.replace(@option_regex, content, "")
   end
 
   def parse_string!(string, options \\ []) do
