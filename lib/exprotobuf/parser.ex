@@ -1,5 +1,5 @@
 defmodule Protobuf.Parser do
-  @option_regex ~r/(\s*option\s|)\(\.google[\._a-z]*\)[\._a-z]* = [\._a-z]*([;,]|)/mi
+  @option_regex ~r/(\s*option\s|)\(\.google[\._a-z]*\)[\._a-z]* = [\._a-z"]*([;,]|)/mi
 
   defmodule ParserError do
     defexception [:message]
