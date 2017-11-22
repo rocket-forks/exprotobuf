@@ -73,41 +73,7 @@ defmodule Protobuf.DefineMessage do
         values |> Enum.into(%{}) |> new()
       end
       def new(values) when is_map(values) do
-        s = struct(unquote(name))
-        keys = Map.keys(Map.from_struct(s))
-        Enum.reduce(keys, s, fn
-          key, acc ->
-            default = get_default(key)
-            value = Map.get(values, key, default)
-            Map.put(acc, key, value)
-        end)
-      end
-
-      defp get_default(field) do
-        case __MODULE__.defs(:field, field) do
-          %Protobuf.OneOfField{} -> nil
-          %Protobuf.Field{occurrence: :repeated} -> []
-          x ->
-            default = get_in(Map.from_struct(x), [:opts, :default])
-            syntax = __MODULE__.syntax()
-            case {x.type, syntax} do
-              {:string, :proto2} when not is_nil(default) ->
-                default
-              {:string, :proto2} ->
-                nil
-              {:string, :proto3} ->
-                ""
-              {ty, :proto2} when not is_nil(default) ->
-                default
-              {_ty, :proto2} ->
-                nil
-              {ty, :proto3} ->
-                case :gpb.proto3_type_default(ty, __MODULE__.defs) do
-                  :undefined -> nil
-                  default -> default
-                end
-            end
-        end
+        struct(unquote(name), values)
       end
     end
   end
@@ -166,5 +132,4 @@ defmodule Protobuf.DefineMessage do
     end)
     |> Enum.reject(fn(field) -> is_nil(field) end)
   end
-
 end
